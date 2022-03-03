@@ -3,11 +3,14 @@ import random
 from classes.Packet import Packet
 import math
 
+
 class Message():
     ''' This class defines an object of a Message, which is a message send between
     the sender and recipient. '''
 
-    __slots__ = ['conf', 'id', 'payload', 'real_sender', 'time_queued', 'time_sent', 'time_delivered', 'transit_time', 'reconstruct', 'complete_receiving', 'pkts']
+    __slots__ = ['conf', 'id', 'payload', 'real_sender', 'time_queued', 'time_sent',
+                 'time_delivered', 'transit_time', 'reconstruct', 'complete_receiving', 'pkts']
+
     def __init__(self, conf, net, payload, dest, real_sender, id=None):
 
         self.conf = conf
@@ -16,9 +19,12 @@ class Message():
         self.payload = payload
         self.real_sender = real_sender
 
-        self.time_queued = None  # The first packet to be added in the queue (sender updates this)
-        self.time_sent = None  # The first packet to leave the client (sender updates this)
-        self.time_delivered = None  # The last packet to arrive (The recipient of msg will fill this in)
+        # The first packet to be added in the queue (sender updates this)
+        self.time_queued = None
+        # The first packet to leave the client (sender updates this)
+        self.time_sent = None
+        # The last packet to arrive (The recipient of msg will fill this in)
+        self.time_delivered = None
         self.transit_time = None
         self.reconstruct = set()  # The IDs we need to reconstruct.
 
@@ -27,17 +33,17 @@ class Message():
         # Packets
         self.pkts = self.split_into_packets(net, dest)
 
-
     @classmethod
     def random(cls, conf, net, sender, dest):
         ''' This class method creates a random message, with random payload. '''
 
-        size = random.randint(conf["message"]["min_msg_size"], conf["message"]["max_msg_size"])
+        size = random.randint(
+            conf["message"]["min_msg_size"], conf["message"]["max_msg_size"])
         payload = random_string(size)
 
-        m = cls(conf=conf, net=net, payload=payload, real_sender=sender, dest=dest)
+        m = cls(conf=conf, net=net, payload=payload,
+                real_sender=sender, dest=dest)
         return m
-
 
     def split_into_packets(self, net, dest):
         ''' Function splits the payload of the message into the fixed size blocks
@@ -58,12 +64,14 @@ class Message():
             num_fragments = 1
         else:
             num_fragments = int(math.ceil(float(len(self.payload))/pkt_size))
-            fragments = [self.payload[i:i + int(self.conf["packet"]["packet_size"])] for i in range(0, len(self.payload), int(self.conf["packet"]["packet_size"]))]
+            fragments = [self.payload[i:i + int(self.conf["packet"]["packet_size"])] for i in range(
+                0, len(self.payload), int(self.conf["packet"]["packet_size"]))]
 
         for i, f in enumerate(fragments):
             rand_route = net.select_random_route()
             rand_route = rand_route + [dest]
-            tmp_pkt = Packet(conf=self.conf, route=rand_route, payload=f, sender=self.real_sender, dest=dest, msg_id=self.id, type="REAL", order=i+1, num=num_fragments, message=self)
+            tmp_pkt = Packet(conf=self.conf, route=rand_route, payload=f, sender=self.real_sender,
+                             dest=dest, msg_id=self.id, type="REAL", order=i+1, num=num_fragments, message=self)
             pkts.append(tmp_pkt)
             self.reconstruct.add(tmp_pkt.id)
 
@@ -79,7 +87,7 @@ class Message():
             Keyword arguments:
             new_pkt - the new packet to be registered.
         '''
-        if self.complete_receiving: #Same packet may have been retransmitted.
+        if self.complete_receiving:  # Same packet may have been retransmitted.
             return
         elif new_pkt.msg_id == self.id and new_pkt.id in self.reconstruct:
             self.reconstruct.remove(new_pkt.id)
@@ -102,7 +110,6 @@ class Message():
             the status of the message completeness is set to True.
         '''
         self.complete_receiving = (len(self.reconstruct) == 0)
-
 
     def output(self):
         ''' Prints all the information about the message ans its packets'''
@@ -134,5 +141,5 @@ class Message():
         print("Payload : " + str(tmp_payload))
 
         for packet in self.pkts:
-           packet.output()
+            packet.output()
         print("=====================")

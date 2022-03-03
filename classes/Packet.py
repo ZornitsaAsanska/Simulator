@@ -1,15 +1,16 @@
 from classes.Utilities import random_string
 import numpy
 
+
 class Packet():
     ''' This module implements the Packet object, which is the data structure responsible for
         transporting message blocks among clients.
     '''
 
     __slots__ = ['conf', 'id', 'route', 'payload', 'real_sender', 'dest', 'msg_id', 'message', 'fragments', 'type', 'pool_logs', 'dropped', 'current_node', 'times_transmitted',
-                'ACK_Received', 'time_queued', 'time_sent', 'time_delivered', 'sender_estimates', 'probability_mass']
+                 'ACK_Received', 'time_queued', 'time_sent', 'time_delivered', 'sender_estimates', 'probability_mass']
 
-    def __init__(self, conf, route, payload, sender, dest, type, packet_id = None, msg_id="DUMMY", order=1, num=1, message=None):
+    def __init__(self, conf, route, payload, sender, dest, type, packet_id=None, msg_id="DUMMY", order=1, num=1, message=None):
         self.conf = conf
         self.id = packet_id or random_string(32)
 
@@ -36,13 +37,13 @@ class Packet():
         self.time_delivered = None
 
         # Measurements
-        self.sender_estimates = numpy.array([0.0, 0.0, 0.0]) #Other, A, B
+        self.sender_estimates = numpy.array([0.0, 0.0, 0.0])  # Other, A, B
         self.sender_estimates[self.real_sender.label] = 1.0
-        self.probability_mass = numpy.zeros(self.conf["misc"]["num_target_packets"])
+        self.probability_mass = numpy.zeros(
+            self.conf["misc"]["num_target_packets"])
 
-        if self.type=="REAL":
+        if self.type == "REAL":
             self.message.reconstruct.add(self.id)
-
 
     @classmethod
     def new(cls, conf, net, dest, payload, sender, type, num, msg_id):
@@ -52,7 +53,6 @@ class Packet():
         rand_route = net.select_random_route()
         rand_route = rand_route + [dest]
         return cls(conf=conf, route=rand_route, payload=payload, sender=sender, dest=dest, type=type, num=num, msg_id=msg_id)
-
 
     @classmethod
     def ack(cls, conf, net, dest, sender, packet_id, msg_id):
@@ -79,7 +79,6 @@ class Packet():
         rand_route = net.select_random_route()
         rand_route = rand_route + [dest]
         return cls(conf=conf, route=rand_route, payload=payload, sender=sender, dest=dest, type="DUMMY_ACK", msg_id="DUMMY_ACK")
-
 
     def output(self):
         ''' Function prints the information about the packet'''

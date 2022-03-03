@@ -9,11 +9,11 @@ from classes.Node import Node
 from classes.Utilities import StructuredMessage, setup_logger, random_string
 import experiments.Settings
 
+
 class Client(Node):
     def __init__(self, env, conf, net, loggers=None, label=0, id=None, p2p=False):
         self.conf = conf
         super().__init__(env=env, conf=conf, net=net, loggers=loggers, id=id)
-
 
     def schedule_retransmits(self):
         pass
@@ -29,7 +29,6 @@ class Client(Node):
         for pkt in message.pkts:
             pkt.time_queued = current_time
         self.add_to_buffer(message.pkts)
-
 
     def print_msgs(self):
         ''' Method prints all the messages gathered in the buffer of incoming messages.'''
